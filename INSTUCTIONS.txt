@@ -1,68 +1,105 @@
 noisecloud 1.0 -----------------------------------------------------------
-This package has been developed from original scripts, so please contact 
-vsochat@stanford.edu with bug reports.
 
-INSTALLATION**
-1. Download base scripts from:
 
-Extract these scripts in a handy dandy location, cd to that location, and add them to your path:
+Installation***
+
+Download base scripts from https://github.com/vsoch/noisecloud.  Extract these scripts in a handy dandy location, cd to that location, and add them to your path:
+
 addpath(genpath(pwd))
 
-2. You must have spm installed and added to your path.
-
-PREPROCESSING **
-
-1. Preprocessing your data and ICA are up to you, to be done with your software package of choice.
-You will likely want include bandpass filtering your data, and registering all subjects to a standard template.
-
-2. To extract spatial features relevant to different regions of interest and matter types, you will need to 
-register the provided templates in the "mr" folder to the standard template that you data is registered to. 
-You should add paths to these images under "noisecloud_setup."
-
-3. If you performed ICA with FSL, you can select the .ica directories as your input, and the script will
-find the thresholded Z-stat images as well as the corresponding timeseries text files (t*.txt).
-If you have not used FSL, you must select these files manually.  An example image and timeseries file are
-provided under "example"
+You must have spm installed and added to your path.
+ 
 
 
-FEATURE EXTRACTION**
+Preprocessing***
 
-1. The main function that you want to run is "noisecloud."  You can use it as follows:
+
+INDEPENDENT COMPONENT ANALYSIS
+
+Preprocessing your data and performing ICA are up to you, to be done with your software package of choice.  I would recommend the MELODIC toolbox in FSL.  For resting BOLD you will likely want to include bandpass filtering of your data, and registering all subjects to a standard template.
+
+REGISTRATION 
+
+To extract spatial features relevant to different regions of interest and matter types, you will need to register the templates provided in the “mr” folder to the standard template that you data is registered to. You should add paths to these images under the script noisecloud_setup.
+
+COMPONENT INPUT
+
+If you performed ICA with FSL, you can select the .ica directories as your input, and the script will find the thresholded Z-stat images as well as the corresponding timeseries text files (t*.txt). If you have not used FSL, you must select these files manually. An example image and timeseries file are provided under example.
+
+ 
+
+
+Feature Extraction***
+
+
+The main function that you want to run is “noisecloud.” You can use it as follows:
 
 [ features_norm, feature_labels, row_labels ] = noisecloud
 
-to return a list of normalized features, corresponding labels (columns), and component IDs (rows). 
-You will be asked to select FSL .ica directories, atlas images (that must be coregistered to the same standard 
-template as your data), as well as specify the TR.  The subject IDs will be extracted from the folder name.  
-Change the script prep/read_fsldirs.m to edit specifics of the paths, etc.
+to return a list of normalized features, corresponding labels (columns), and component IDs (rows). You will be asked to select FSL .ica directories, atlas images (that must be coregistered to the same standard template as your data), as well as specify the TR. The subject IDs will be extracted from the folder name. Change the script prep/noisecloud_read_fsldirs.m to edit specifics of the paths, etc, or just write your own input function.
 
-
-CLASSIFIER**
-
-1. You will need to have a set of labels to distinguish noise/not-noise, or some network of interest/~network of interest.
-If you processed your data with FSL, you can use the label networks gui under "prep/label-good-bad-gui" to create
-a .mat file with both image labels and names.  If not, use prep/noisecloud_create_labels as a guide to create
-this .mat file.
-
-
-
-JUST DOWNLOAD FEATURES**
-
-The script noisecloud_download has been provided to just download feature extraction scripts into the temp folder.  For
-each spatial feature script (noisecloud_spatial_*.m, the scripts take as input the 3D spatial map.  For each temporal
-feature script (noisecloud_temporal_*.m) the scripts take as input the timeseries as a single vector.
-
-
-
-CONTRIBUTING **
-3. % To create your own file (with some custom of features) you can use
-% this interface: 
-
-% ADDING FEATURES: Please submit novel feature scripts to
-% THIS LINK, and be sure to follow THIS STANDARD FORMAT. A template feature
-% script has been provided in this package to give you guidance.
-
-
-QUESTIONS **
  
+
+ 
+
+
+Classifier***
+
+
+CREATE LABELS
+
+You will need to have a set of labels to distinguish noise/not-noise, or some network of interest/~network of interest. If you processed your data with FSL, you can use the label networks gui under “prep/label-good-bad-gui” to create a .mat file with both image labels and names. If not, use prep/noisecloud_create_labels as a guide to create this .mat file.
+
+BUILD CLASSIFIER
+
+You can use any sort of machine learning that you like to predict label type from the normalized data.  As an example, this pipeline provides noisecloud_classify, which will use cross validated logistic regression with the elastic net, a regularization technique that varies between the LASSO penalty and standard ridge regression.  It is supremely awesome.  To build the classifier with your data, run:
+
+
+RESULT = noisecloud_classify(features_norm,feature_labels)
+
+The script will ask you to select your labels.mat file (created with the label networks gui), a value of K for cross validation,
+and a number of permutations (if you are interested in comparing your best cross validation accuracy to a distribution produced via random shuffling of the labels).  It is recommended to start with 1 permutation, as more than one takes a longer time.
+Alpha is chosen via a grid search between 0 and 1, and lambda is selected from a range based on the value that maximizes the cross validated accuracy.
+The script will plot an ROC curve to show sensitivity and specificity of your classifier, and a confusion matrix.  In the case that you run permutations, these ROC curves will be plotted as well.  The RESULT output object contains details about the model, the model itself, as well as selected features and weights.
+ 
+
+
+Just Download Features***
+
+
+The script noisecloud_download has been provided to just download feature extraction scripts into the temp folder. For each spatial feature script (noisecloud_spatial_*.m, the scripts take as input the 3D spatial map. For each temporal feature script (noisecloud_temporal_*.m) the scripts take as input the timeseries as a single vector.  Note that the download is incredibly simple – we query the database via HTTP (sometimes called a REST API), which returns JSON that is parsed by Matlab.
+
+ 
+
+
+Contributing***
+
+
+Please submit your spatial and temporal features for others to use!  Use the following format:
+
+ 
+% Spatial Feature Script
+ 
+function feature = nc_spatial_feature(spatialMap)
+   <your code here>
+   feature(1) = ...
+   feature(2) = ...
+ 
+   feature(n) = ...
+   <end your code>
+end
+ 
+% Temporal Feature Script
+ 
+function feature = nc_temporal_feature(timeseries)
+   <your code here>
+   feature = ...
+   <end your code>
+end
+ 
+
+
+Questions
+
+
 vsochat@stanford.edu
