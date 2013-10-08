@@ -64,17 +64,19 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
                 subplot(1,2,1); title([ 'Permutation ' num2str(it) ' : Best CVA ' num2str(PERMRESULT.best_cva) ]);
             end
 
-        
+
     % Normalize our distribution
-    % acc_std = std(acc_results);
-    % acc_mean = mean(acc_results);
+    acc_std = std(acc_results);
+    acc_mean = mean(acc_results);
     % acc_results_norm = (acc_results - acc_mean) / acc_std;
 
-    % Return p value and confidence interval for 95% of distribution
-    [~,p,ci] = ttest(acc_results,5);
-    REALRESULT.perm.p = p;
+    % If you want to do statistical calculations for the permutations, add
+    % them here!
+    % p value and confidence interval for 95% of distribution
+    % [~,p,ci] = ttest(acc_results,5);
+    REALRESULT.perm.mean = acc_mean;
     REALRESULT.perm.n = iterations;
-    REALRESULT.perm.ci = ci;
+    REALRESULT.perm.std = acc_std;
 
     end
 
