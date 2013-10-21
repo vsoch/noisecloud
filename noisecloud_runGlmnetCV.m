@@ -64,7 +64,6 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
                 subplot(1,2,1); title([ 'Permutation ' num2str(it) ' : Best CVA ' num2str(PERMRESULT.best_cva) ]);
             end
 
-
     % Normalize our distribution
     acc_std = std(acc_results);
     acc_mean = mean(acc_results);
@@ -79,5 +78,18 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
     REALRESULT.perm.std = acc_std;
 
     end
-
+    
+    % We can calculate a 95% confidence interval for our result based on
+    % the standard error of a binomial.  Given k successes out of n trials, 
+    % the observered proportion p = k/n, with standard error SE = sqrt(p*(1-p)/n).  
+    % The 95% confidence interval is p +/- 1.96*SE.  
+    % If n < 20, you may need to use an adjusted formula.
+    
+    % P is our best cross validation accuracy
+    p = REALRESULT.best_cva;
+    SE = sqrt(p*(1-p)/size(X,1));
+    int95lower = p - 1.96*SE;
+    int95upper = p + 1.96*SE;
+    REALRESULT.CI95 = [int95lower int95upper];
+    
 end
