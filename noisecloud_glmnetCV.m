@@ -215,7 +215,14 @@ title([ 'ROC Curve for alpha= ' num2str(RESULT.opt_alpha) ', lambda= ' num2str(R
 Ypredicty = (Ypredictions < .5);  % Now bad is 1 and 0 is good
 % Evaluate(ACTUAL,PREDICTED) returns EVAL = [accuracy sensitivity specificity precision recall f_measure gmean tp tn fp fn]
 EVAL = Evaluate(evallabels,Ypredicty);
-        
+RESULT.ROC.acc = EVAL(1);
+RESULT.ROC.sens = EVAL(2);
+RESULT.ROC.spec = EVAL(3);
+RESULT.ROC.tp = EVAL(8);
+RESULT.ROC.tn = EVAL(9);
+RESULT.ROC.fp = EVAL(10);
+RESULT.ROC.fn = EVAL(11);
+
 % Confusion Matrix
 %f = figure('Position',[100 100 300 150]);
 % data = [TP FP; FN TN]
