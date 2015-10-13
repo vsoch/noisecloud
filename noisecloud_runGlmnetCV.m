@@ -63,15 +63,14 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
                 title('Confusion Matrix'); axis off
                 subplot(1,2,1); title([ 'Permutation ' num2str(it) ' : Best CVA ' num2str(PERMRESULT.best_cva) ]);
             end
-            
+
     % Normalize our distribution
-    % acc_std = std(acc_results);
-    % acc_mean = mean(acc_results);
+    acc_std = std(acc_results);
+    acc_mean = mean(acc_results);
     % acc_results_norm = (acc_results - acc_mean) / acc_std;
 
     % If you want to do statistical calculations for the permutations, add
     % them here!
-   
     % p value and confidence interval for 95% of distribution
     % [~,p,ci] = ttest(acc_results,5);
     REALRESULT.perm.mean = acc_mean;
@@ -80,6 +79,7 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
 
     end
     
+
     % CONFIDENCE INTERVALS
     % We can calculate 95% confidence intervals for our results based on
     % the standard error of a binomial.  Given k successes out of n trials, 
@@ -112,5 +112,5 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
     int95lower = p - 1.96*SE;
     int95upper = p + 1.96*SE;
     REALRESULT.CI95.spec = [int95lower int95upper];
-    
+
 end
