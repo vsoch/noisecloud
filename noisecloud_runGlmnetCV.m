@@ -63,19 +63,54 @@ function REALRESULT = noisecloud_runGlmnetCV(X,y,K,iterations,alphav,Lambda,type
                 title('Confusion Matrix'); axis off
                 subplot(1,2,1); title([ 'Permutation ' num2str(it) ' : Best CVA ' num2str(PERMRESULT.best_cva) ]);
             end
-
-        
+            
     % Normalize our distribution
     % acc_std = std(acc_results);
     % acc_mean = mean(acc_results);
     % acc_results_norm = (acc_results - acc_mean) / acc_std;
 
-    % Return p value and confidence interval for 95% of distribution
-    [~,p,ci] = ttest(acc_results,5);
-    REALRESULT.perm.p = p;
+    % If you want to do statistical calculations for the permutations, add
+    % them here!
+   
+    % p value and confidence interval for 95% of distribution
+    % [~,p,ci] = ttest(acc_results,5);
+    REALRESULT.perm.mean = acc_mean;
     REALRESULT.perm.n = iterations;
-    REALRESULT.perm.ci = ci;
+    REALRESULT.perm.std = acc_std;
 
     end
+    
+    % CONFIDENCE INTERVALS
+    % We can calculate 95% confidence intervals for our results based on
+    % the standard error of a binomial.  Given k successes out of n trials, 
+    % the observered proportion p = k/n, with standard error SE = sqrt(p*(1-p)/n).  
+    % The 95% confidence interval is p +/- 1.96*SE.  
+    % If n < 20, you may need to use an adjusted formula.
 
+    % CVA confidence interval
+    % P is our best cross validation accuracy, k/n
+    p = REALRESULT.best_cva;
+    SE = sqrt(p*(1-p)/size(X,1));
+    int95lower = p - 1.96*SE;
+    int95upper = p + 1.96*SE;
+    REALRESULT.CI95.best_cva = [int95lower int95upper];
+    
+    % Sensitivity confidence interval
+    kk = REALRESULT.ROC.tp;
+    n = sum(y == 1);  % noise is 1, not is 2 
+    p = kk/n;
+    SE = sqrt(p*(1-p)/n);
+    int95lower = p - 1.96*SE;
+    int95upper = p + 1.96*SE;
+    REALRESULT.CI95.sens = [int95lower int95upper];
+    
+    % Specificity confidence interval
+    kk = REALRESULT.ROC.tn;
+    n = sum(y == 2);  % noise is 1, not is 2 
+    p = kk/n;
+    SE = sqrt(p*(1-p)/n);
+    int95lower = p - 1.96*SE;
+    int95upper = p + 1.96*SE;
+    REALRESULT.CI95.spec = [int95lower int95upper];
+    
 end

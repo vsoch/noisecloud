@@ -43,7 +43,7 @@ noisecloud_setup
 
 %% Step 1: GET FEATURES FROM noisecloud for download
 fprintf('%s\n','Reading spatial and temporal features from noisecloud...');
-spatial = urlread('http://vbmis.com/bmi/ncdb/rest/spatial');
+spatial = urlread('http://vbmis.com/bmi/ncdb/rest/spat');
 temporal = urlread('http://vbmis.com/bmi/ncdb/rest/temporal');
 
 % Parse spatial and temporal features
